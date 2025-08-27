@@ -17,3 +17,10 @@ Outputs:
 - Stock snapshot: month high/low, current price, EPS, P/E, P/B
 
 Testing strategies on a simulated stock trading environment which handles stocks from the LSE and NYSE.
+
+- Example trades:
+    - trader.place_order('AAPL', 'SELL', 5)
+    - trader.place_order('LLOY.L', 'BUY', 100)
+    - trader.display_portfolio()
+    - trader.display_trade_history()
+
