@@ -1,0 +1,148 @@
+body {
+  background: #000;
+  color: #fff;
+  font-family: 'Courier New', Courier, monospace;
+  margin: 0;
+  padding: 0;
+}
+.container {
+  width: 70vw;
+  margin: 2em auto;
+}
+h1 {
+  text-align: center;
+  margin: 1em 0 0.5em 0;
+  font-size: 2.4em;
+  font-weight: bold;
+  letter-spacing: 0.12em;
+}
+.tabs {
+  display: flex;
+  margin: 1.3em 0 2em 0;
+  border-bottom: 2px solid #fff;
+}
+.tabbtn {
+  flex: 1;
+  padding: 1em 0;
+  text-align: center;
+  font-size: 1.1em;
+  background: none;
+  border: none;
+  color: #fff;
+  border-bottom: 4px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-bottom 0.15s;
+}
+.tabbtn.active {
+  border-bottom: 4px solid #fff;
+  background: #111;
+  font-weight: bold;
+}
+.tab-content {
+  display: none;
+  margin-top: 2em;
+}
+.tab-content.active {
+  display: block;
+}
+.summary-block {
+  border: 2px solid #fff;
+  padding: 2em;
+  margin: 0 auto;
+  border-radius: 3px;
+  background: #000;
+  max-width: 650px;
+}
+.summary-block h2 {
+  font-size: 1.3em;
+  margin: 0 0 1.4em 0;
+  font-family: inherit;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+}
+.summary-block div {
+  margin-bottom: 0.8em;
+}
+#refreshBtn {
+  background: #000;
+  color: #fff;
+  font-family: inherit;
+  border: 2px solid #fff;
+  padding: 0.6em 1.3em;
+  font-size: 1em;
+  cursor: pointer;
+  margin-right: 1.5em;
+  transition: background 0.1s;
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1em;
+  margin-top: 1.6em;
+}
+.summary-item {
+  border: 2px solid #fff;
+  padding: 1.1em;
+  text-align: center;
+  background: #000;
+  border-radius: 2px;
+}
+.summary-label {
+  font-size: 1.05em;
+  margin-bottom: 0.6em;
+  letter-spacing: 0.06em;
+}
+.summary-value {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+input, select, button {
+  background: #000;
+  color: #fff;
+  border: 1px solid #fff;
+  padding: 0.4em 0.8em;
+  font-family: inherit;
+  margin-right: 0.6em;
+}
+#trade-form {
+  display: flex;
+  gap: 0.7em;
+  align-items: center;
+  margin: 2em 0 .7em 0;
+}
+#trade-feedback {
+  color: #ff4d4d;
+  margin: 0.8em 0 0 0;
+  font-weight: bold;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.8em 0;
+  font-size: 1.05em;
+}
+th, td {
+  border: none;
+  padding: 0.7em 0.4em;
+  text-align: center;
+}
+th {
+  font-size: 1em;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  background: #111;
+  border-bottom: 2px solid #fff;
+}
+tr:nth-child(even) {
+  background: #111;
+}
+button {
+  cursor: pointer;
+  border-radius: 2px;
+}
+@media (max-width: 850px) {
+  .container { width: 95vw; }
+  .summary-block { max-width: 98vw; }
+  .summary-grid { grid-template-columns: 1fr; }
+}

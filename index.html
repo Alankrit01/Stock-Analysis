@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PAPER TRADING SYSTEM</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>PAPER TRADING SYSTEM</h1>
+    <div class="tabs">
+      <button class="tabbtn active" onclick="showTab('dashboard')">Dashboard</button>
+      <button class="tabbtn" onclick="showTab('trade')">Trade</button>
+      <button class="tabbtn" onclick="showTab('positions')">Positions</button>
+      <button class="tabbtn" onclick="showTab('history')">History</button>
+    </div>
+    <div id="dashboard" class="tab-content active">
+      <div class="summary-block">
+        <h2>PORTFOLIO SUMMARY</h2>
+        <div>
+          <button id="refreshBtn">Refresh Data</button>
+          <span id="lastUpdated">Last updated: Never</span>
+        </div>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <div class="summary-label">Cash (GBP)</div>
+            <div class="summary-value" id="cash">£0.00</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Portfolio Value (GBP)</div>
+            <div class="summary-value" id="portfolioValue">£0.00</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Unrealized P&L (GBP)</div>
+            <div class="summary-value" id="unrealizedPL">£0.00</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Realized P&L (GBP)</div>
+            <div class="summary-value" id="realizedPL">£0.00</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Open Positions</div>
+            <div class="summary-value" id="openPositions">0</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">USD to GBP Rate</div>
+            <div class="summary-value" id="usdtogbp">0.00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="trade" class="tab-content">
+      <h2>NEW TRADE</h2>
+      <form id="trade-form">
+        <input type="text" name="symbol" placeholder="Symbol" required>
+        <select name="action" id="trade-action">
+          <option>BUY</option>
+          <option>SELL</option>
+          <option>SHORT</option>
+          <option>COVER</option>
+        </select>
+        <input type="number" name="quantity" placeholder="Quantity" step="any" min="0.0001" required>
+        <button type="submit">Submit</button>
+      </form>
+      <div id="trade-feedback"></div>
+    </div>
+    <div id="positions" class="tab-content">
+      <h2>POSITIONS</h2>
+      <table id="positions-table">
+        <thead>
+          <tr>
+            <th>Symbol</th><th>Qty</th><th>Avg Cost</th><th>Curr Price</th>
+            <th>Mkt Value</th><th>Unreal PnL</th><th>Real PnL</th><th>Type</th><th>Currency</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div id="history" class="tab-content">
+      <h2>TRADE HISTORY</h2>
+      <table id="history-table">
+        <thead>
+          <tr>
+            <th>Symbol</th><th>Action</th><th>Qty</th><th>Price</th>
+            <th>Commission</th><th>Value</th><th>Currency</th><th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button onclick="window.location='/api/export'">Export Excel</button>
+    </div>
+  </div>
+  <script>
+    // Tab logic
+    function showTab(tabId) {
+      document.querySelectorAll('.tabbtn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelector('.tabbtn[onclick*="'+tabId+'"]').classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+      if(tabId === 'positions') loadPositions();
+      if(tabId === 'history') loadHistory();
+    }
+    // Load summary
+    function loadSummary() {
+      fetch('/api/summary').then(res => res.json()).then(data => {
+        document.getElementById('cash').innerText = `£${data.cash_gbp.toFixed(2)}`;
+        document.getElementById('portfolioValue').innerText = `£${data.portfolio_value_gbp.toFixed(2)}`;
+        document.getElementById('unrealizedPL').innerText = `£${data.unrealized_pnl_gbp.toFixed(2)}`;
+        document.getElementById('realizedPL').innerText = `£${data.realized_pnl_gbp.toFixed(2)}`;
+        document.getElementById('openPositions').innerText = data.positions_count;
+        document.getElementById('usdtogbp').innerText = data.usd_to_gbp.toFixed(2);
+        document.getElementById('lastUpdated').innerText = "Last updated: " + (data.last_updated || "Never");
+      });
+    }
+    document.getElementById('refreshBtn').onclick = loadSummary;
+    // Trade form logic
+    document.getElementById('trade-form').onsubmit = function(e){
+      e.preventDefault();
+      let symbol = this.symbol.value.trim();
+      let action = this.action.value;
+      let qty = parseFloat(this.quantity.value);
+      let feedback = document.getElementById('trade-feedback');
+      feedback.textContent = '';
+      if (!symbol || !['BUY','SELL','SHORT','COVER'].includes(action)) {
+        feedback.textContent = 'Invalid symbol or action.';
+        return;
+      }
+      if (!(qty > 0)) {
+        feedback.textContent = 'Quantity must be positive.';
+        return;
+      }
+      fetch('/api/order', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({symbol, action, quantity: qty})
+      })
+      .then(resp => resp.json())
+      .then(resp => {
+        feedback.textContent = resp.message;
+        loadSummary();
+        loadPositions();
+        loadHistory();
+      });
+    };
+    function loadPositions() {
+      fetch('/api/positions').then(res => res.json()).then(rows => {
+        let html = '';
+        rows.forEach(r => {
+          html += `<tr>
+            <td>${r.symbol}</td>
+            <td>${r.quantity.toFixed(4)}</td>
+            <td>${r.avg_cost.toFixed(2)}</td>
+            <td>${r.current_price.toFixed(2)}</td>
+            <td>${r.market_value.toFixed(2)}</td>
+            <td>${r.unrealized_pnl.toFixed(2)}</td>
+            <td>${r.realized_pnl.toFixed(2)}</td>
+            <td>${r.position_type}</td>
+            <td>${r.currency}</td>
+          </tr>`;
+        });
+        document.querySelector('#positions-table tbody').innerHTML = html;
+      });
+    }
+    function loadHistory() {
+      fetch('/api/history').then(res => res.json()).then(rows => {
+        let html = '';
+        rows.forEach(r => {
+          html += `<tr>
+            <td>${r.symbol}</td>
+            <td>${r.action}</td>
+            <td>${r.quantity.toFixed(4)}</td>
+            <td>${r.price.toFixed(2)}</td>
+            <td>${r.commission.toFixed(2)}</td>
+            <td>${r.value.toFixed(2)}</td>
+            <td>${r.currency}</td>
+            <td>${r.timestamp}</td>
+          </tr>`;
+        });
+        document.querySelector('#history-table tbody').innerHTML = html;
+      });
+    }
+    loadSummary();
+  </script>
+</body>
+</html>
