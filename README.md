@@ -24,3 +24,6 @@ Testing strategies on a simulated stock trading environment which handles stocks
     - trader.display_portfolio()
     - trader.display_trade_history()
 
+## Screenshots
+<img width="1120" height="800" alt="Screenshot 2025-09-07 at 21 52 42" src="https://github.com/user-attachments/assets/beb3f788-90d1-4c90-b274-4ded9f92b236" />
+
